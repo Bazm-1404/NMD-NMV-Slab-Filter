@@ -1,0 +1,42 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyInstaller
+        run: python -m pip install --upgrade pip pyinstaller
+
+      - name: Build application
+        run: |
+          pyinstaller --onedir --windowed --clean --noconfirm --name NMD_NMV_Slab_Filter NMD_NMV_Slab_Filter.py
+
+      - name: Package application folder
+        run: |
+          Compress-Archive -Path dist/NMD_NMV_Slab_Filter -DestinationPath NMD_NMV_Slab_Filter_Windows.zip
+
+      - name: Upload Windows application
+        uses: actions/upload-artifact@v4
+        with:
+          name: NMD_NMV_Slab_Filter_Windows
+          path: NMD_NMV_Slab_Filter_Windows.zip
+          if-no-files-found: error
+          retention-days: 14
